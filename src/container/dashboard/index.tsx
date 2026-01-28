@@ -3,10 +3,8 @@ import { supabase } from "../../lib/supabase/supabase";
 import Tables, { DataType } from "../../component/table";
 import { Select, Space } from 'antd';
 import { Input, GetProps } from 'antd';
-type SearchProps = GetProps<typeof Input.Search>;
 
 const Dashboard = () => {
-  const [posts, setPosts] = useState<DataType[]>([]);
   const [loading, setLoading] = useState(true);
   const [active, setActive] = useState<"approved" | "unapproved">("approved");
   const [dataSource, setDataSource] = useState<DataType[]>([]);
@@ -65,8 +63,6 @@ const handleApproach = async (id: string ) => {
   useEffect(() => {
     fetchData(table, searchCountry, postType);
   }, [active, searchCountry, postType]);
-
-
   const handleChange = (value: string) => {
     if (value === "approve") {
       setActive("approved");
