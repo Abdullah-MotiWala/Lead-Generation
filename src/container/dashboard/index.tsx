@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase/supabase";
 import Tables, { DataType } from "../../component/table";
-import { DownOutlined, EllipsisOutlined, UserOutlined } from '@ant-design/icons';
-import type { MenuProps } from 'antd';
 import { Select, Space } from 'antd';
 import { Input, GetProps } from 'antd';
 type SearchProps = GetProps<typeof Input.Search>;
@@ -67,7 +65,6 @@ const handleApproach = async (id: string ) => {
   useEffect(() => {
     fetchData(table, searchCountry, postType);
   }, [active, searchCountry, postType]);
-
 
 
   const handleChange = (value: string) => {

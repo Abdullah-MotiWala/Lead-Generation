@@ -86,7 +86,7 @@
 // const Tables: React.FC = () => <Table<DataType> columns={columns} dataSource={data} />;
 // export default Tables;
 import React from 'react';
-import { Table, Tag, Space  , Tooltip} from 'antd';
+import { Table, Tag,Tooltip} from 'antd';
 import type { TableProps } from 'antd';
 
 // Interface ko apne Supabase table ke columns ke mutabiq set karein
@@ -112,7 +112,7 @@ const Tables: React.FC<TablesProps> = ({ dataSource, loading , onApproach }) => 
     title: 'Name',
     dataIndex: 'name',
     key: 'name',
-    render: (text) => <a>{text}</a>,
+    render: (text) =><a href=''>{text}</a>,
   },
   {
     title: 'location',
