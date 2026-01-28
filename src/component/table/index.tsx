@@ -98,7 +98,16 @@ export interface DataType {
   tags: string[];
 }
 
-const columns: TableProps<DataType>['columns'] = [
+
+
+interface TablesProps {
+  dataSource: DataType[];
+  loading: boolean;
+  onApproach: (id: string) => void;
+}
+
+const Tables: React.FC<TablesProps> = ({ dataSource, loading , onApproach }) => {
+ const columns: TableProps<DataType>['columns'] = [
   {
     title: 'Name',
     dataIndex: 'name',
@@ -160,20 +169,45 @@ const columns: TableProps<DataType>['columns'] = [
       </Tooltip>
     ),
   },
+  {
+    title: 'Status Contacted',
+    dataIndex: 'status_contacted',
+    key: 'status_contacted',
+    render: (value: boolean) => (
+    <Tag color={value ? 'green' : 'volcano'}>
+      {value ? 'Approached' : 'Pending'}
+    </Tag>)
+  },
+  {
+      title: 'Action',
+      key: 'action',
+      render: (_, record: any) => (
+        <button
+          onClick={() => onApproach(record.id)}
+          disabled={record.status_contacted}
+          className={`px-3 py-1 rounded ${
+            record.status_contacted 
+            ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+            : 'bg-black text-white hover:bg-gray-300 hover:text-gray-500'
+          }`}
+        >
+          {record.status_contacted ? 'Approached' : 'Mark Approach'}
+        </button>
+      ),
+    },
 ];
-
-interface TablesProps {
-  dataSource: DataType[];
-  loading: boolean;
-}
-
-const Tables: React.FC<TablesProps> = ({ dataSource, loading }) => {
   return (
     <Table 
       columns={columns} 
       dataSource={dataSource} 
       loading={loading} 
       rowKey="id" // Supabase ki unique ID use karein
+      pagination={{
+        pageSize: 50,
+        showSizeChanger: true, 
+        pageSizeOptions: ['10', '20', '50', '100'],
+        position: ['bottomCenter'], 
+      }}
     />
   );
 };

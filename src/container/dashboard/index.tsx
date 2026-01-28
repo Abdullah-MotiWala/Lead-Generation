@@ -21,25 +21,48 @@ const Dashboard = () => {
 
   const { Search } = Input;
 
-  const fetchData = async (tableName: string, country: string, type: string) => {
+ const fetchData = async (tableName: string, country: string, type: string) => {
     setLoading(true);
-    let query = supabase.from(tableName).select("*");
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+    let query = supabase
+      .from(tableName)
+      .select("*")
+      // 2. Filter: created_at column ki value twentyFourHoursAgo se bari honi chahiye (gte = Greater Than or Equal)
+      .gte("created_at", twentyFourHoursAgo) 
+      // 3. Sorting: Latest rows sabse upar dikhane ke liye
+      .order("created_at", { ascending: false });
 
     if (country) {
       query = query.ilike("location", `%${country}%`);
     }
 
     if (type) {
-      
       query = query.ilike("postType", `%${type}%`);
     }
 
     const { data, error } = await query;
     if (!error && data) {
       setDataSource(data as DataType[]);
+      console.log("data:", data);
+
+    } else if (error) {
+      console.error("Error fetching data:", error.message);
     }
     setLoading(false);
   };
+const handleApproach = async (id: string ) => {
+  const { error } = await supabase
+    .from(table) // 'table' variable aapke state mein pehle se hai
+    .update({ status_contacted: true })
+    .eq('id', id);
+
+  if (!error) {
+    setDataSource(prev => 
+      prev.map(item => String(item.id) === String(id) ? { ...item, status_contacted: true } : item)
+    );
+  }
+};
 
   useEffect(() => {
     fetchData(table, searchCountry, postType);
@@ -114,7 +137,7 @@ const Dashboard = () => {
 
         {/* Table Container */}
         <div className="bg-white rounded-lg overflow-x-auto">
-          <Tables dataSource={dataSource} loading={loading} />
+          <Tables dataSource={dataSource} loading={loading} onApproach={handleApproach}/>
         </div>
 
       </div>
