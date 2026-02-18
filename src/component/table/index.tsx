@@ -85,7 +85,7 @@
 
 // const Tables: React.FC = () => <Table<DataType> columns={columns} dataSource={data} />;
 // export default Tables;
-import React from 'react';
+import React , {useState} from 'react';
 import { Table, Tag,Tooltip} from 'antd';
 import type { TableProps } from 'antd';
 
@@ -107,6 +107,7 @@ interface TablesProps {
 }
 
 const Tables: React.FC<TablesProps> = ({ dataSource, loading , onApproach }) => {
+  const [pageSize, setPageSize] = useState(10);
  const columns: TableProps<DataType>['columns'] = [
   {
     title: 'Name',
@@ -135,9 +136,9 @@ const Tables: React.FC<TablesProps> = ({ dataSource, loading , onApproach }) => 
   },
    {
     title: 'content',
-    dataIndex: 'content',
+    dataIndex:'content',
     key: 'content',
-     width: 200,
+    width: 200,
     ellipsis: true,
     render: (text) => (
       <Tooltip title={text}>
@@ -165,7 +166,7 @@ const Tables: React.FC<TablesProps> = ({ dataSource, loading , onApproach }) => 
     ellipsis: true,
     render: (text) => (
       <Tooltip title={text}>
-        <span>{text}</span>
+        <a href={text} >{text}</a>
       </Tooltip>
     ),
   },
@@ -201,12 +202,15 @@ const Tables: React.FC<TablesProps> = ({ dataSource, loading , onApproach }) => 
       columns={columns} 
       dataSource={dataSource} 
       loading={loading} 
-      rowKey="id" // Supabase ki unique ID use karein
+      rowKey="id" 
       pagination={{
-        pageSize: 50,
+        pageSize: pageSize,
         showSizeChanger: true, 
         pageSizeOptions: ['10', '20', '50', '100'],
         position: ['bottomCenter'], 
+        onShowSizeChange: (current, size) => {
+          setPageSize(size);
+        },
       }}
     />
   );
