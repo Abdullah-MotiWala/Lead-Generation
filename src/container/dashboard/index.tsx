@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase/supabase";
 import Tables, { DataType } from "../../component/table";
-import { Select, Space } from 'antd';
-import { Input, GetProps } from 'antd';
+import { Select, Space, Input } from "antd";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -10,78 +9,102 @@ const Dashboard = () => {
   const [dataSource, setDataSource] = useState<DataType[]>([]);
   const [searchCountry, setSearchCountry] = useState("");
   const [postType, setPostType] = useState("");
-  const table = active === "approved" ? "approved_region_person" : "unapprove_region_person";
-  const onSearch = (value: string) => {
-    setSearchCountry(value);
-  };
+  const [approachFilter, setApproachFilter] = useState("");
+
+  const table =
+    active === "approved"
+      ? "approved_region_person"
+      : "unapprove_region_person";
 
   const { Search } = Input;
 
- const fetchData = async (tableName: string, country: string, type: string) => {
+  // 🔥 Fetch Data Function
+  const fetchData = async (
+    tableName: string,
+    country: string,
+    type: string,
+    approach: string
+  ) => {
     setLoading(true);
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+    // const twentyFourHoursAgo = new Date(
+    //   Date.now() - 24 * 60 * 60 * 1000
+    // ).toISOString();
 
     let query = supabase
       .from(tableName)
       .select("*")
-      // 2. Filter: created_at column ki value twentyFourHoursAgo se bari honi chahiye (gte = Greater Than or Equal)
-      .gte("created_at", twentyFourHoursAgo) 
-      // 3. Sorting: Latest rows sabse upar dikhane ke liye
+      // .gte("created_at", twentyFourHoursAgo)
       .order("created_at", { ascending: false });
 
+    // 🔎 Country Filter
     if (country) {
       query = query.ilike("location", `%${country}%`);
     }
 
+    // 🏷 Post Type Filter
     if (type) {
-      query = query.ilike("postType", `%${type}%`);
+      query = query.eq("postType", type);
+    }
+
+    // 📞 Approach Filter
+    if (approach === "APPROACHED") {
+      query = query.eq("status_contacted", true);
+    }
+
+    if (approach === "NOT_APPROACHED") {
+      query = query.eq("status_contacted", false);
     }
 
     const { data, error } = await query;
+
     if (!error && data) {
       setDataSource(data as DataType[]);
-      console.log("data:", data);
-
     } else if (error) {
       console.error("Error fetching data:", error.message);
     }
+
     setLoading(false);
   };
-const handleApproach = async (id: string ) => {
-  const { error } = await supabase
-    .from(table) // 'table' variable aapke state mein pehle se hai
-    .update({ status_contacted: true })
-    .eq('id', id);
 
-  if (!error) {
-    setDataSource(prev => 
-      prev.map(item => String(item.id) === String(id) ? { ...item, status_contacted: true } : item)
-    );
-  }
-};
-
+  // 🔁 Auto Fetch on Filter Change
   useEffect(() => {
-    fetchData(table, searchCountry, postType);
-  }, [active, searchCountry, postType]);
+    fetchData(table, searchCountry, postType, approachFilter);
+  }, [active, searchCountry, postType, approachFilter]);
+
+  // 🔘 Handle Table Switch
   const handleChange = (value: string) => {
     if (value === "approve") {
       setActive("approved");
-      fetchData("approved_region_person", searchCountry, postType);
     }
-
     if (value === "unapprove") {
       setActive("unapproved");
-      fetchData("unapprove_region_person", searchCountry, postType);
     }
   };
 
+  // 📞 Approach Button Update
+  const handleApproach = async (id: string) => {
+    const { error } = await supabase
+      .from(table)
+      .update({ status_contacted: true })
+      .eq("id", id);
 
+    if (!error) {
+      setDataSource((prev) =>
+        prev.map((item) =>
+          String(item.id) === String(id)
+            ? { ...item, status_contacted: true }
+            : item
+        )
+      );
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4">
-
+      
       {/* Heading */}
-      <div className="mb-6 text-center ">
+      <div className="mb-6 text-center">
         <h1 className="text-2xl mt-4 text-black md:text-3xl font-bold tracking-wide">
           Linkedin Post Data
         </h1>
@@ -89,50 +112,67 @@ const handleApproach = async (id: string ) => {
           Manage and view your linkedin post analytics
         </p>
       </div>
-      <div className="w-full max-full rounded-xl shadow-xl border-gray-200 border-4">
 
-        <div className="m-2 gap-4 flex justify-between items-center">
+      <div className="w-full max-full rounded-xl shadow-xl border-gray-200 border-4">
+        
+        {/* Filters */}
+        <div className="m-2 gap-4 flex justify-between items-center flex-wrap">
           <Space>
             <Search
               placeholder="Search Country"
-              onSearch={onSearch}
+              onSearch={(value) => setSearchCountry(value)}
               enterButton
-              className="dashboard-search "
+              className="dashboard-search"
             />
           </Space>
-          <div>
+
+          <div className="flex gap-3 flex-wrap">
+            {/* Post Type */}
             <Select
               placeholder="Select Post Type"
               style={{ width: 160 }}
               allowClear
               onChange={(value) => setPostType(value || "")}
               options={[
-                { value: 'FREELANCE', label: 'Freelance' },
-                { value: 'COMPANY', label: 'Company' },
-
+                { value: "FREELANCE", label: "Freelance" },
+                { value: "COMPANY", label: "Company" },
               ]}
             />
+
+            {/* Approach Status */}
+            <Select
+              placeholder="Approach Status"
+              style={{ width: 180 }}
+              allowClear
+              onChange={(value) => setApproachFilter(value || "")}
+              options={[
+                { value: "APPROACHED", label: "Approached" },
+                { value: "NOT_APPROACHED", label: "Not Approached" },
+              ]}
+            />
+
+            {/* Approved / Unapproved */}
             <Select
               defaultValue="approve"
               style={{ width: 140 }}
               onChange={handleChange}
               value={active === "approved" ? "approve" : "unapprove"}
               options={[
-                { value: 'approve', label: 'Approved' },
-                { value: 'unapprove', label: 'Unapproved' },
+                { value: "approve", label: "Approved" },
+                { value: "unapprove", label: "Unapproved" },
               ]}
             />
           </div>
-
         </div>
 
-
-
-        {/* Table Container */}
+        {/* Table */}
         <div className="bg-white rounded-lg overflow-x-auto">
-          <Tables dataSource={dataSource} loading={loading} onApproach={handleApproach}/>
+          <Tables
+            dataSource={dataSource}
+            loading={loading}
+            onApproach={handleApproach}
+          />
         </div>
-
       </div>
     </div>
   );

@@ -85,8 +85,8 @@
 
 // const Tables: React.FC = () => <Table<DataType> columns={columns} dataSource={data} />;
 // export default Tables;
-import React , {useState} from 'react';
-import { Table, Tag,Tooltip} from 'antd';
+import React, { useState } from 'react';
+import { Table, Tag, Tooltip } from 'antd';
 import type { TableProps } from 'antd';
 
 // Interface ko apne Supabase table ke columns ke mutabiq set karein
@@ -106,110 +106,138 @@ interface TablesProps {
   onApproach: (id: string) => void;
 }
 
-const Tables: React.FC<TablesProps> = ({ dataSource, loading , onApproach }) => {
+const Tables: React.FC<TablesProps> = ({ dataSource, loading, onApproach }) => {
   const [pageSize, setPageSize] = useState(10);
- const columns: TableProps<DataType>['columns'] = [
-  {
-    title: 'Name',
-    dataIndex: 'name',
-    key: 'name',
-    render: (text) =><a href=''>{text}</a>,
-  },
-  {
-    title: 'location',
-    dataIndex: 'location',
-    key: 'location',
-  },
-  {
-    title: 'postType',
-    key: 'postType',
-    dataIndex: 'postType',
-    // render: (tags: string[]) => (
-    //   <>
-    //     {tags?.map((tag) => (
-    //       <Tag color="blue" key={tag}>
-    //         {tag.toUpperCase()}
-    //       </Tag>
-    //     ))}
-    //   </>
-    // ),
-  },
-   {
-    title: 'content',
-    dataIndex:'content',
-    key: 'content',
-    width: 200,
-    ellipsis: true,
-    render: (text) => (
-      <Tooltip title={text}>
-        <span>{text}</span>
-      </Tooltip>
-    ),
-  },
-   {
-    title: 'reason',
-    dataIndex: 'reason',
-    key: 'reason',
-     width: 200,
-    ellipsis: true,
-    render: (text) => (
-      <Tooltip title={text}>
-        <span>{text}</span>
-      </Tooltip>
-    ),
-  },
-   {
-    title: 'linkedin',
-    dataIndex: 'posts_link',
-    key: 'posts_link',
-     width: 200,
-    ellipsis: true,
-    render: (text) => (
-      <Tooltip title={text}>
-        <a href={text} >{text}</a>
-      </Tooltip>
-    ),
-  },
-  {
-    title: 'Status Contacted',
-    dataIndex: 'status_contacted',
-    key: 'status_contacted',
-    render: (value: boolean) => (
-    <Tag color={value ? 'green' : 'volcano'}>
-      {value ? 'Approached' : 'Pending'}
-    </Tag>)
-  },
-  {
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  console.log(dataSource, "This is Data")
+  const columns: TableProps<DataType>['columns'] = [
+    {
+      title: '#',
+      key: 'index',
+      render: (_: any, __: any, index: number) =>
+        (currentPage - 1) * pageSize + index + 1,
+      width: 70,
+    },
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+      render: (text) => <a href=''>{text}</a>,
+    },
+    {
+      title: 'location',
+      dataIndex: 'location',
+      key: 'location',
+    },
+    {
+      title: 'postType',
+      key: 'postType',
+      dataIndex: 'postType',
+      // render: (tags: string[]) => (
+      //   <>
+      //     {tags?.map((tag) => (
+      //       <Tag color="blue" key={tag}>
+      //         {tag.toUpperCase()}
+      //       </Tag>
+      //     ))}
+      //   </>
+      // ),
+    },
+    {
+      title: 'content',
+      dataIndex: 'content',
+      key: 'content',
+      width: 200,
+      ellipsis: true,
+      render: (text) => (
+        <Tooltip title={text}>
+          <span>{text}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'reason',
+      dataIndex: 'reason',
+      key: 'reason',
+      width: 200,
+      ellipsis: true,
+      render: (text) => (
+        <Tooltip title={text}>
+          <span>{text}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'Date',
+      dataIndex: 'created_at',
+      key: 'created_at',
+      render: (value: string) => {
+        const date = new Date(value);
+        return date.toLocaleString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      },
+    },
+    {
+      title: 'linkedin',
+      dataIndex: 'posts_link',
+      key: 'posts_link',
+      width: 200,
+      ellipsis: true,
+      render: (text) => (
+        <Tooltip title={text}>
+          <a href={text} >{text}</a>
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'Status Contacted',
+      dataIndex: 'status_contacted',
+      key: 'status_contacted',
+      render: (value: boolean) => (
+        <Tag color={value ? 'green' : 'volcano'}>
+          {value ? 'Approached' : 'Pending'}
+        </Tag>)
+    },
+    {
       title: 'Action',
       key: 'action',
       render: (_, record: any) => (
         <button
           onClick={() => onApproach(record.id)}
           disabled={record.status_contacted}
-          className={`px-3 py-1 rounded ${
-            record.status_contacted 
-            ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+          className={`px-3 py-1 rounded ${record.status_contacted
+            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
             : 'bg-black text-white hover:bg-gray-300 hover:text-gray-500'
-          }`}
+            }`}
         >
           {record.status_contacted ? 'Approached' : 'Mark Approach'}
         </button>
       ),
     },
-];
+
+  ];
   return (
-    <Table 
-      columns={columns} 
-      dataSource={dataSource} 
-      loading={loading} 
-      rowKey="id" 
+    <Table
+
+      columns={columns}
+      dataSource={dataSource}
+      loading={loading}
+      rowKey="id"
       pagination={{
         pageSize: pageSize,
-        showSizeChanger: true, 
+        showSizeChanger: true,
         pageSizeOptions: ['10', '20', '50', '100'],
-        position: ['bottomCenter'], 
-        onShowSizeChange: (current, size) => {
+        position: ['bottomCenter'],
+        onShowSizeChange: (page, size) => {
           setPageSize(size);
+          setCurrentPage(page);
         },
       }}
     />
